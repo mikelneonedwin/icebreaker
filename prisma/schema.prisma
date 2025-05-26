@@ -1,0 +1,69 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  // output   = "../generated/prisma"
+  // output   = "../.prisma"
+}
+
+generator virtualDbTypes {
+  provider = "node ./prisma/generator/types.ts"
+}
+
+generator virtualDbPlugin {
+  provider = "node ./prisma/generator/plugin.ts"
+  output = "../plugins"
+}
+
+generator virtualDbStore {
+  provider = "node ./prisma/generator/store.ts"
+  output = "../src"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model most_likely_to {
+  id      String @id @default(uuid())
+  content String
+}
+
+model two_truths_and_a_lie {
+  id      String @id @default(uuid())
+  content String
+}
+
+model never_have_i_ever {
+  id      String @id @default(uuid())
+  content String
+}
+
+model how_well_do_you_know_me {
+  id      String @id @default(uuid())
+  content String
+}
+
+model deep_cuts {
+  id      String @id @default(uuid())
+  content String
+}
+
+model would_you_rather {
+  id      String @id @default(uuid())
+  content String
+}
+model hot_takes {
+  id      String @id @default(uuid())
+  content String
+}
+
+model rapid_fire {
+  id      String @id @default(uuid())
+  content String
+}
