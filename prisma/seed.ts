@@ -7,6 +7,7 @@ import {
   DEEP_CUTS,
   TWO_TRUTHS_AND_A_LIE,
   WOULD_YOU_RATHER,
+  RAPID_FIRE,
 } from "../constants";
 
 const prisma = new PrismaClient();
@@ -47,6 +48,11 @@ async function main() {
       content,
     })),
   });
+  await prisma.rapid_fire.createMany({
+    data: RAPID_FIRE.map((content) => ({
+      content
+    }))
+  })
 }
 
 main()
