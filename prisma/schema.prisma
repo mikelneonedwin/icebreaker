@@ -11,16 +11,16 @@ generator client {
 }
 
 generator virtualDbTypes {
-  provider = "node ./prisma/generator/types.ts"
+  provider = "tsx ./prisma/generator/types.ts"
 }
 
 generator virtualDbPlugin {
-  provider = "node ./prisma/generator/plugin.ts"
+  provider = "tsx ./prisma/generator/plugin.ts"
   output = "../plugins"
 }
 
 generator virtualDbStore {
-  provider = "node ./prisma/generator/store.ts"
+  provider = "tsx ./prisma/generator/store.ts"
   output = "../src"
 }
 
