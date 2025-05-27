@@ -4,7 +4,9 @@ import { createJSONStorage, persist } from "zustand/middleware";
 type GameKey = keyof typeof import("virtual:db");
 type StoreState = Record<GameKey, string[]>;
 type Action = (id: string, key: GameKey) => void;
-type StoreAction = Record<"addItem" | "removeItem", Action>;
+type StoreAction = Record<"addItem" | "removeItem", Action> & {
+  reset: (key: GameKey) => void;
+};
 
 export const useStore = create<StoreState & StoreAction>()(
   persist(
@@ -25,6 +27,10 @@ export const useStore = create<StoreState & StoreAction>()(
         set((state) => ({
           [key]: state[key].filter((value) => value !== id),
         })),
+      reset: (key) =>
+        set({
+          [key]: [],
+        }),
     }),
     {
       name: "icebreaker-store",
