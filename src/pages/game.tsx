@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 import { useStore } from "@/store";
 import clsx from "clsx";
 import { ArrowLeft, Check, RotateCw } from "lucide-react";
@@ -11,30 +12,37 @@ type Params = {
   key: keyof typeof import("virtual:db");
 };
 
-const GameNavButton: FC<ComponentProps<typeof Button>> = (props) => {
+const GameNavButton: FC<ComponentProps<typeof Button>> = ({
+  variant = "ghost",
+  className,
+  ...props
+}) => {
   const { key } = useParams<Params>();
   return (
     <Button
       {...props}
-      variant="ghost"
-      className={clsx({
-        "text-pink-400 hover:text-pink-300 hover:bg-pink-500/10":
-          key === "most_likely_to",
-        "text-purple-400 hover:text-purple-300 hover:bg-purple-500/10":
-          key === "would_you_rather",
-        "text-orange-400 hover:text-orange-300 hover:bg-orange-500/10":
-          key === "hot_takes",
-        "text-blue-400 hover:text-blue-300 hover:bg-blue-500/10":
-          key === "never_have_i_ever",
-        "text-green-400 hover:text-green-300 hover:bg-green-500/10":
-          key === "two_truths_and_a_lie",
-        "text-yellow-400 hover:text-yellow-300 hover:bg-yellow-500/10":
-          key === "how_well_do_you_know_me",
-        "text-red-400 hover:text-red-300 hover:bg-red-500/10":
-          key === "rapid_fire",
-        "text-violet-400 hover:text-violet-300 hover:bg-violet-500/10":
-          key === "deep_cuts",
-      })}
+      variant={variant}
+      className={
+        (cn({
+          "text-pink-400 hover:text-pink-300 hover:bg-pink-500/10":
+            key === "most_likely_to",
+          "text-purple-400 hover:text-purple-300 hover:bg-purple-500/10":
+            key === "would_you_rather",
+          "text-orange-400 hover:text-orange-300 hover:bg-orange-500/10":
+            key === "hot_takes",
+          "text-blue-400 hover:text-blue-300 hover:bg-blue-500/10":
+            key === "never_have_i_ever",
+          "text-green-400 hover:text-green-300 hover:bg-green-500/10":
+            key === "two_truths_and_a_lie",
+          "text-yellow-400 hover:text-yellow-300 hover:bg-yellow-500/10":
+            key === "how_well_do_you_know_me",
+          "text-red-400 hover:text-red-300 hover:bg-red-500/10":
+            key === "rapid_fire",
+          "text-violet-400 hover:text-violet-300 hover:bg-violet-500/10":
+            key === "deep_cuts",
+        }),
+        className)
+      }
     />
   );
 };
@@ -54,14 +62,14 @@ export default function Game() {
       <div className="container mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-8">
           <Link to="/" replace>
-            <GameNavButton key={key}>
+            <GameNavButton>
               <ArrowLeft className="size-4 mr-2" />
               Back to Games
             </GameNavButton>
           </Link>
-          <GameNavButton key={key} onClick={() => reset(key)}>
-            <RotateCw className="size-4 ml-2" />
+          <GameNavButton variant="outline" onClick={() => reset(key)}>
             Reset
+            <RotateCw className="size-4" />
           </GameNavButton>
         </div>
 

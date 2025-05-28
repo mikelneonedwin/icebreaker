@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
+import * as exports from "./store-export";
 
 type GameKey = keyof typeof import("virtual:db");
 type StoreState = Record<GameKey, string[]>;
@@ -11,14 +12,7 @@ type StoreAction = Record<"addItem" | "removeItem", Action> & {
 export const useStore = create<StoreState & StoreAction>()(
   persist(
     (set) => ({
-      most_likely_to: [] as string[],
-      two_truths_and_a_lie: [] as string[],
-      never_have_i_ever: [] as string[],
-      how_well_do_you_know_me: [] as string[],
-      deep_cuts: [] as string[],
-      would_you_rather: [] as string[],
-      hot_takes: [] as string[],
-      rapid_fire: [] as string[],
+      ...exports,
       addItem: (id, key) =>
         set((state) => ({
           [key]: [...state[key], id],
