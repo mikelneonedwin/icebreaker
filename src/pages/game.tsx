@@ -1,6 +1,5 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
 import { useStore } from "@/store";
 import clsx from "clsx";
 import { ArrowLeft, Check, RotateCw } from "lucide-react";
@@ -22,8 +21,8 @@ const GameNavButton: FC<ComponentProps<typeof Button>> = ({
     <Button
       {...props}
       variant={variant}
-      className={
-        (cn({
+      className={clsx(
+        {
           "text-pink-400 hover:text-pink-300 hover:bg-pink-500/10":
             key === "most_likely_to",
           "text-purple-400 hover:text-purple-300 hover:bg-purple-500/10":
@@ -40,9 +39,9 @@ const GameNavButton: FC<ComponentProps<typeof Button>> = ({
             key === "rapid_fire",
           "text-violet-400 hover:text-violet-300 hover:bg-violet-500/10":
             key === "deep_cuts",
-        }),
-        className)
-      }
+        },
+        className
+      )}
     />
   );
 };
@@ -67,9 +66,9 @@ export default function Game() {
               Back to Games
             </GameNavButton>
           </Link>
-          <GameNavButton variant="outline" onClick={() => reset(key)}>
+          <GameNavButton variant="outline" className="group" onClick={() => reset(key)}>
             Reset
-            <RotateCw className="size-4" />
+            <RotateCw className="size-4 group-hover:animate-spin" />
           </GameNavButton>
         </div>
 
