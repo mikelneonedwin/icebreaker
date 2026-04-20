@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { gameCategories } from "@/data/games";
 import { useStore } from "@/store";
 import clsx from "clsx";
 import { ArrowLeft, Check, RotateCw } from "lucide-react";
@@ -55,6 +56,7 @@ export default function Game() {
 
   if (!key || selectedPromptIds === null) return "ERROR";
   const prompts = dataset[key];
+  const category = gameCategories.find((c) => c.slug === key);
 
   return (
     <div className="min-h-screen bg-gray-900 text-white">
@@ -92,7 +94,7 @@ export default function Game() {
             {key?.replace(/_/g, " ")}
           </h1>
           <p className="text-gray-400 text-lg">
-            Vote on who in your group fits these hilarious scenarios!
+            {category?.description}
           </p>
         </div>
 
@@ -181,6 +183,9 @@ export default function Game() {
                 onClick={() => {
                   const action = isSelected ? removeItem : addItem;
                   action(prompt.id, key);
+                  if (!isSelected) {
+                    navigator.clipboard.writeText(prompt.content);
+                  }
                 }}
               >
                 <CardContent className="p-4">

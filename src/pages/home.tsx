@@ -1,84 +1,8 @@
 "use client";
 
 import { Card, CardContent } from "@/components/ui/card";
-import {
-  Brain,
-  Eye,
-  Flame,
-  Heart,
-  MessageSquare,
-  Users,
-  XCircle,
-  Zap,
-} from "lucide-react";
+import { gameCategories } from "@/data/games";
 import { useNavigate } from "react-router";
-
-const gameCategories = [
-  {
-    name: "Most Likely To",
-    description: "Vote on who fits these hilarious scenarios",
-    color: "from-pink-500 to-rose-500",
-    players: "3+ players",
-    icon: Users,
-    slug: "most_likely_to",
-  },
-  {
-    name: "Would You Rather",
-    description: "Choose between impossible dilemmas",
-    color: "from-purple-500 to-indigo-500",
-    players: "2+ players",
-    icon: MessageSquare,
-    slug: "would_you_rather",
-  },
-  {
-    name: "Hot Takes",
-    description: "Share your most controversial opinions",
-    color: "from-orange-500 to-red-500",
-    players: "3+ players",
-    icon: Flame,
-    slug: "hot_takes",
-  },
-  {
-    name: "Never Have I Ever",
-    description: "Discover secrets with this classic game",
-    color: "from-blue-500 to-cyan-500",
-    players: "3+ players",
-    icon: XCircle,
-    slug: "never_have_i_ever",
-  },
-  {
-    name: "Two Truths and a Lie",
-    description: "Guess which statement is the lie",
-    color: "from-green-500 to-emerald-500",
-    players: "3+ players",
-    icon: Eye,
-    slug: "two_truths_and_a_lie",
-  },
-  {
-    name: "How Well Do You Know Me?",
-    description: "Test how well your friends know you",
-    color: "from-yellow-500 to-amber-500",
-    players: "2+ players",
-    icon: Brain,
-    slug: "how_well_do_you_know_me",
-  },
-  {
-    name: "Rapid Fire",
-    description: "Quick questions, quicker answers",
-    color: "from-red-500 to-pink-500",
-    players: "2+ players",
-    icon: Zap,
-    slug: "rapid_fire",
-  },
-  {
-    name: "Deep Cuts",
-    description: "Meaningful conversations and connections",
-    color: "from-violet-500 to-purple-500",
-    players: "2+ players",
-    icon: Heart,
-    slug: "deep_cuts",
-  },
-];
 
 export default function Home() {
   const navigate = useNavigate();
