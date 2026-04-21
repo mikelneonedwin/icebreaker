@@ -1,15 +1,16 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { gameCategories } from "@/data/games";
+import { useMultiplayer } from "@/hooks/useMultiplayer";
 import { useStore } from "@/store";
 import clsx from "clsx";
-import { ArrowLeft, Check, RotateCw } from "lucide-react";
-import type { ComponentProps, FC } from "react";
-import { Link, useParams } from "react-router";
-import * as dataset from "virtual:db";
+import { ArrowLeft, Check, RotateCw, Share2, Users, User } from "lucide-react";
+import { useState, type ComponentProps, type FC } from "react";
+import { Link, useParams, useSearchParams } from "react-router";
+import { dataset, type GameKey } from "@/data/dataset";
 
 type Params = {
-  key: keyof typeof import("virtual:db");
+  key: GameKey;
 };
 
 const GameNavButton: FC<ComponentProps<typeof Button>> = ({
@@ -49,6 +50,12 @@ const GameNavButton: FC<ComponentProps<typeof Button>> = ({
 
 export default function Game() {
   const { key } = useParams<Params>();
+  const [searchParams] = useSearchParams();
+  const urlRoomId = searchParams.get("room") || undefined;
+  
+  const { roomId, isConnected, syncAction, userName, setUserName, tickers } = useMultiplayer(urlRoomId);
+  const [isMultiplayerMode, setIsMultiplayerMode] = useState(!!urlRoomId);
+  
   const selectedPromptIds = useStore((state) => (key ? state[key] : null));
   const removeItem = useStore((state) => state.removeItem);
   const addItem = useStore((state) => state.addItem);
@@ -57,6 +64,49 @@ export default function Game() {
   if (!key || selectedPromptIds === null) return "ERROR";
   const prompts = dataset[key];
   const category = gameCategories.find((c) => c.slug === key);
+
+  const shareGame = () => {
+    setIsMultiplayerMode(true);
+    const url = new URL(window.location.href);
+    if (roomId) {
+      url.searchParams.set("room", roomId);
+    }
+    navigator.clipboard.writeText(url.toString());
+    alert("Multiplayer link copied to clipboard!");
+  };
+
+  if (isMultiplayerMode && !userName) {
+    return (
+      <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center p-4">
+        <Card className="w-full max-w-md bg-gray-800 border-gray-700">
+          <CardContent className="p-8 text-center">
+            <User className="size-16 mx-auto mb-6 text-pink-400" />
+            <h2 className="text-2xl font-bold mb-4">What's your name?</h2>
+            <p className="text-gray-400 mb-8">Choose a name to let others know who is ticking the boxes!</p>
+            <input
+              autoFocus
+              className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 mb-6 focus:ring-2 focus:ring-pink-500 outline-none transition-all"
+              placeholder="Enter your name..."
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  setUserName((e.target as HTMLInputElement).value.trim());
+                }
+              }}
+            />
+            <Button 
+              className="w-full bg-pink-500 hover:bg-pink-600 h-12 text-lg font-semibold"
+              onClick={() => {
+                const input = document.querySelector('input') as HTMLInputElement;
+                if (input.value.trim()) setUserName(input.value.trim());
+              }}
+            >
+              Start Playing
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-900 text-white">
@@ -68,10 +118,23 @@ export default function Game() {
               Back to Games
             </GameNavButton>
           </Link>
-          <GameNavButton variant="outline" className="group" onClick={() => reset(key)}>
-            Reset
-            <RotateCw className="size-4 group-hover:animate-spin" />
-          </GameNavButton>
+          <div className="flex gap-2">
+            <GameNavButton
+              variant="outline"
+              className={clsx("group", isConnected && isMultiplayerMode && "bg-green-500/10 border-green-500/50 text-green-400")}
+              onClick={shareGame}
+            >
+              {isConnected && isMultiplayerMode ? "Connected" : "Play with Friends"}
+              {isConnected && isMultiplayerMode ? <Users className="size-4" /> : <Share2 className="size-4" />}
+            </GameNavButton>
+            <GameNavButton variant="outline" className="group" onClick={() => {
+              reset(key);
+              syncAction("reset", "", key);
+            }}>
+              Reset
+              <RotateCw className="size-4 group-hover:animate-spin" />
+            </GameNavButton>
+          </div>
         </div>
 
         <div className="text-center mb-8">
@@ -96,21 +159,31 @@ export default function Game() {
           <p className="text-gray-400 text-lg">
             {category?.description}
           </p>
+          {isConnected && isMultiplayerMode && (
+            <div className="mt-4 inline-flex items-center gap-2 bg-green-500/10 text-green-400 px-3 py-1 rounded-full text-sm">
+              <div className="size-2 bg-green-500 rounded-full animate-pulse"></div>
+              Multiplayer Active as <span className="font-bold underline">{userName}</span>
+            </div>
+          )}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {prompts.map((prompt, index) => {
             const isSelected = selectedPromptIds.includes(prompt.id);
+            const ticker = tickers[key]?.[prompt.id];
+            const isTicker = ticker?.id === userName;
+            const canToggle = !isMultiplayerMode || !isSelected || isTicker;
+
             return (
               <Card
                 key={index}
                 className={clsx(
-                  "bg-gray-800 border-2 cursor-pointer transition-all duration-300 hover:scale-105 hover:shadow-lg",
+                  "bg-gray-800 border-2 transition-all duration-300",
+                  canToggle ? "cursor-pointer hover:scale-105 hover:shadow-lg" : "opacity-70 cursor-not-allowed",
                   isSelected && "shadow-lg",
                   clsx(
                     key === "most_likely_to" &&
                       clsx(
-                        "hover:shadow-pink-500/20",
                         isSelected
                           ? "border-pink-400 bg-pink-500/10 shadow-lg shadow-pink-500/20"
                           : "border-pink-500/50 hover:border-pink-400"
@@ -119,7 +192,6 @@ export default function Game() {
                   clsx(
                     key === "would_you_rather" &&
                       clsx(
-                        "hover:shadow-purple-500/20",
                         isSelected
                           ? "border-purple-400 bg-purple-500/10 shadow-lg shadow-purple-500/20"
                           : "border-purple-500/50 hover:border-purple-400"
@@ -128,7 +200,6 @@ export default function Game() {
                   clsx(
                     key === "hot_takes" &&
                       clsx(
-                        "hover:shadow-orange-500/20",
                         isSelected
                           ? "border-orange-400 bg-orange-500/10 shadow-lg shadow-orange-500/20"
                           : "border-orange-500/50 hover:border-orange-400"
@@ -137,7 +208,6 @@ export default function Game() {
                   clsx(
                     key === "never_have_i_ever" &&
                       clsx(
-                        "hover:shadow-blue-500/20",
                         isSelected
                           ? "border-blue-400 bg-blue-500/10 shadow-lg shadow-blue-500/20"
                           : "border-blue-500/50 hover:border-blue-400"
@@ -146,7 +216,6 @@ export default function Game() {
                   clsx(
                     key === "two_truths_and_a_lie" &&
                       clsx(
-                        "hover:shadow-green-500/20",
                         isSelected
                           ? "border-green-400 bg-green-500/10 shadow-lg shadow-green-500/20"
                           : "border-green-500/50 hover:border-green-400"
@@ -155,7 +224,6 @@ export default function Game() {
                   clsx(
                     key === "how_well_do_you_know_me" &&
                       clsx(
-                        "hover:shadow-yellow-500/20",
                         isSelected
                           ? "border-yellow-400 bg-yellow-500/10 shadow-lg shadow-yellow-500/20"
                           : "border-yellow-500/50 hover:border-yellow-400"
@@ -164,7 +232,6 @@ export default function Game() {
                   clsx(
                     key === "rapid_fire" &&
                       clsx(
-                        "hover:shadow-red-500/20",
                         isSelected
                           ? "border-red-400 bg-red-500/10 shadow-lg shadow-red-500/20"
                           : "border-red-500/50 hover:border-red-400"
@@ -173,7 +240,6 @@ export default function Game() {
                   clsx(
                     key === "deep_cuts" &&
                       clsx(
-                        "hover:shadow-violet-500/20",
                         isSelected
                           ? "border-violet-400 bg-violet-500/10 shadow-lg shadow-violet-500/20"
                           : "border-violet-500/50 hover:border-violet-400"
@@ -181,22 +247,21 @@ export default function Game() {
                   )
                 )}
                 onClick={() => {
+                  if (!canToggle) return;
                   const action = isSelected ? removeItem : addItem;
                   action(prompt.id, key);
+                  syncAction(isSelected ? "remove" : "add", prompt.id, key);
                   if (!isSelected) {
                     navigator.clipboard.writeText(prompt.content);
                   }
                 }}
               >
-                <CardContent className="p-4">
+                <CardContent className="p-4 relative">
                   <div className="flex items-start gap-3">
-                    {/* <span className="text-pink-400 font-bold text-sm bg-pink-500/20 px-2 py-1 rounded-full min-w-[2rem] text-center">
-                        {isSelected ? <Check className="size-4"/> : index + 1}
-                      </span> */}
                     <div
                       className={clsx(
-                        "size-8 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-300 border-2",
-                        isSelected && "text-white group-hover:scale-110",
+                        "size-8 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-300 border-2 shrink-0 overflow-hidden relative",
+                        isSelected && "text-white",
                         clsx(
                           key === "most_likely_to" &&
                             (isSelected
@@ -247,7 +312,20 @@ export default function Game() {
                         )
                       )}
                     >
-                      {isSelected ? <Check className="size-4" /> : index + 1}
+                      {isSelected ? (
+                        ticker ? (
+                          <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/40">
+                            <Check className="size-3" />
+                            <span className="text-[6px] uppercase tracking-tighter font-black leading-none mt-0.5 truncate w-full px-0.5 text-center">
+                              {ticker.name}
+                            </span>
+                          </div>
+                        ) : (
+                          <Check className="size-4" />
+                        )
+                      ) : (
+                        index + 1
+                      )}
                     </div>
                     <p
                       className={clsx(
@@ -265,6 +343,7 @@ export default function Game() {
             );
           })}
         </div>
+
 
         {selectedPromptIds.length > 0 && (
           <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2">

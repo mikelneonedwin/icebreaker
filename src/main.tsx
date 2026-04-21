@@ -5,11 +5,12 @@ import { ThemeProvider } from "./components/theme-provider";
 import "./index.css";
 import Home from "./pages/home";
 import Game from "./pages/game";
-import { Analytics } from "@vercel/analytics/react";
+import { Analytics as VercelAnalytics } from "@vercel/analytics/react";
+import "@/lib/firebase";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <Analytics />
+    <VercelAnalytics />
     <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
       <BrowserRouter>
         <Routes>

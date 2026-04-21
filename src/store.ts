@@ -1,18 +1,23 @@
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
-import * as exports from "./store-export";
+import { dataset, type GameKey } from "./data/dataset";
 
-type GameKey = keyof typeof import("virtual:db");
 type StoreState = Record<GameKey, string[]>;
-type Action = (id: string, key: GameKey) => void;
-type StoreAction = Record<"addItem" | "removeItem", Action> & {
+type StoreAction = {
+  addItem: (id: string, key: GameKey) => void;
+  removeItem: (id: string, key: GameKey) => void;
   reset: (key: GameKey) => void;
 };
+
+const initialState: StoreState = Object.keys(dataset).reduce((acc, key) => {
+  acc[key as GameKey] = [];
+  return acc;
+}, {} as StoreState);
 
 export const useStore = create<StoreState & StoreAction>()(
   persist(
     (set) => ({
-      ...exports,
+      ...initialState,
       addItem: (id, key) =>
         set((state) => ({
           [key]: [...state[key], id],
@@ -33,3 +38,4 @@ export const useStore = create<StoreState & StoreAction>()(
     }
   )
 );
+
